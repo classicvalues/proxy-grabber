@@ -54,3 +54,16 @@ func WriteProxiesToFile(proxies []string) error {
 
 	return nil
 }
+
+func RemoveDuplicateProxies(proxies []string) []string {
+	keys := make(map[string]bool)
+	list := []string{}
+
+	for _, entry := range proxies {
+		if _, value := keys[entry]; !value {
+			keys[entry] = true
+			list = append(list, entry)
+		}
+	}
+	return list
+}

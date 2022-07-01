@@ -17,7 +17,7 @@ func main() {
 	//set Envs
 	helper.SetEnvs(currentWd, fileName)
 
-	filePath, err := helper.CheckFileExistsOrCreate()
+	_, err := helper.CheckFileExistsOrCreate()
 
 	if err != nil {
 		panic(err.Error())
@@ -30,6 +30,5 @@ func main() {
 		panic(message)
 	}
 
-	webscrape.WebScrapeProxyListNet(filePath)
-
+	webscrape.InitializeWebScrapeProxies()
 }
