@@ -30,5 +30,12 @@ func main() {
 		panic(message)
 	}
 
-	webscrape.InitializeWebScrapeProxies()
+	proxies := webscrape.InitializeWebScrapeProxies()
+	activeProxies := helper.FindActiveProxies(2, proxies)
+	err = helper.WriteProxiesToFile(activeProxies)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
 }

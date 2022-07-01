@@ -1,6 +1,7 @@
 package helper
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 )
@@ -19,10 +20,8 @@ func SetEnvs(dirPath string, fName string) {
 
 func CheckFileExistsOrCreate() (string, error) {
 
-	dirPath := os.Getenv(dirpathEnvName)
-
-	if _, err := os.Stat(dirPath); os.IsNotExist(err) {
-		err = os.Mkdir(dirPath, os.ModeAppend)
+	if _, err := os.Stat(fPath); os.IsNotExist(err) {
+		_, err = os.Create(fPath)
 
 		if err != nil {
 			return "", err
@@ -40,6 +39,8 @@ func TruncateFile() error {
 }
 
 func WriteProxiesToFile(proxies []string) error {
+	fmt.Printf("proxies are writing into file\n")
+
 	f, err := os.OpenFile(fPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 
 	if err != nil {
@@ -51,6 +52,8 @@ func WriteProxiesToFile(proxies []string) error {
 	for _, proxy := range proxies {
 		f.WriteString(proxy + "\n")
 	}
+
+	fmt.Printf("proxies wrote in file!\n")
 
 	return nil
 }
