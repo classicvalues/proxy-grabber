@@ -4,16 +4,21 @@ import (
 	"fmt"
 	"os"
 	"proxy-grabber/helper"
+	"proxy-grabber/input"
 	"proxy-grabber/webscrape"
 )
 
 func main() {
 
+	//filename with extension
+	var fileName string
+	var chunkSize int
+
+	fileName = input.EnterFileName()
+	chunkSize = input.EnterChunkSize()
+
 	//current dir
 	currentWd, _ := os.Getwd()
-	//filename with extension
-	fileName := "proxies.txt"
-
 	//set Envs
 	helper.SetEnvs(currentWd, fileName)
 
@@ -31,7 +36,7 @@ func main() {
 	}
 
 	proxies := webscrape.InitializeWebScrapeProxies()
-	activeProxies := helper.FindActiveProxies(2, proxies)
+	activeProxies := helper.FindActiveProxies(chunkSize, proxies)
 	err = helper.WriteProxiesToFile(activeProxies)
 
 	if err != nil {
