@@ -20,6 +20,7 @@ go build
 
 
 ### Todo
+* <s>add timeout to reverse proxy http client</s>
 * add HTTPS proxies (save in different file)
 * add SOCKS 5 proxies (save in different file)
 * adding Dynamic Host to Reverse Proxy for checking grabbed proxies
