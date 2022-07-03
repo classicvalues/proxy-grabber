@@ -26,11 +26,11 @@ func InitializeWebScrapeProxies() []string {
 
 	wg.Wait()
 
-	fmt.Printf("Removing duplicate proxies")
+	fmt.Printf("Removing duplicate proxies\n")
 
 	uniqueProxies := helper.RemoveDuplicateProxies(proxies)
 
-	fmt.Printf("Duplicate proxies removed")
+	fmt.Printf("Duplicate proxies removed\n")
 
 	proxies = []string{}
 

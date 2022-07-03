@@ -6,7 +6,7 @@ import (
 )
 
 var fileName string
-var chunkSize int = 10
+var chunkSize int = 50
 
 func EnterFileName() string {
 	fmt.Println("Please enter the file name, by default it's proxies.txt (if you wanna use default just enter please!)")
@@ -24,7 +24,7 @@ func EnterFileName() string {
 }
 
 func EnterChunkSize() int {
-	fmt.Println("Please enter the chunkSize, by default it's 10 (if you wanna use default just enter please!)")
+	fmt.Println("Please enter the chunkSize, by default it's 50 (if you wanna use default just enter please!)")
 	fmt.Scanln(&chunkSize)
 
 	if chunkSize < 0 {

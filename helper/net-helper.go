@@ -4,17 +4,28 @@ import (
 	"fmt"
 	"net/http"
 	"sync"
+	"time"
 )
 
 var wg sync.WaitGroup
 var activeProxies = make([]string, 0)
 var totalProxies int
+var client = http.Client{
+	Timeout: 2 * time.Second,
+}
 
 func FindActiveProxies(chunkSize int, proxies []string) []string {
 
 	totalProxies = len(proxies)
 
 	chunkCount, chunkProxies := chunkProxies(proxies, chunkSize)
+
+	if totalProxies%2 != 0 {
+		chunkCount += 1
+	}
+
+	fmt.Printf("total proxies: %v\n", totalProxies)
+	fmt.Printf("finding acive proxies , it may take a few minutes , please wait ...\n")
 
 	wg.Add(chunkCount)
 
@@ -49,11 +60,10 @@ func checkAndAddActiveProxies(chunkNumber int, proxies []string) {
 	defer wg.Done()
 
 	for _, proxy := range proxies {
-		fmt.Printf("remained proxies to check: %v\n", totalProxies)
 		proxyUrl := "http://" + proxy
 		req, _ := http.NewRequest("GET", proxyUrl, nil)
 		req.Host = "google.com"
-		res, err := http.DefaultClient.Do(req)
+		res, err := client.Do(req)
 
 		if err != nil {
 			totalProxies -= 1
