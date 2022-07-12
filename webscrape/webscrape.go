@@ -9,38 +9,112 @@ import (
 	"strings"
 	"sync"
 
+	"proxy-grabber/input"
+
 	"github.com/PuerkitoBio/goquery"
 )
 
 var proxies = make([]string, 0)
 var wg sync.WaitGroup
 
-func InitializeWebScrapeProxies() []string {
+func InitializeWebScrapeProxies(proxyType int) []string {
+
+	switch proxyType {
+	case input.Http:
+		result := initializeWebscrapeHttpProxies()
+		proxies = []string{}
+		return result
+	case input.Https:
+		result := initializeWebscrapeHttpsProxies()
+		proxies = []string{}
+		return result
+	case input.Socks5:
+		result := initializeWebscrapeSocks5Proxies()
+		proxies = []string{}
+		return result
+	default:
+		result := initializeWebscrapeAllProxies()
+		proxies = []string{}
+		return result
+	}
+
+}
+
+func initializeWebscrapeHttpProxies() []string {
 
 	wg.Add(4)
 
-	go webScrapeProxyListNet()
-	go webScrapeTheSpeedXGithub()
+	go webScrapeProxyListNet(input.Http)
+	go webScrapeTheSpeedXGithub(input.Http)
 	go webscrapeClarketmGithub()
-	go webScrapeJetkaiHttpGithub()
+	go webScrapeJetkaiGithub(input.Http)
 
 	wg.Wait()
 
-	fmt.Printf("Removing duplicate proxies\n")
+	fmt.Printf("Removing duplicate http proxies\n")
 
 	uniqueProxies := helper.RemoveDuplicateProxies(proxies)
 
-	fmt.Printf("Duplicate proxies removed\n")
-
-	proxies = []string{}
+	fmt.Printf("Duplicate http proxies removed\n")
 
 	return uniqueProxies
 }
 
-func webScrapeProxyListNet() {
-	defer wg.Done()
+func initializeWebscrapeHttpsProxies() []string {
 
-	fmt.Printf("grabbing proxies from %v ...\n", "ProxyListNet")
+	wg.Add(2)
+
+	go webScrapeProxyListNet(input.Https)
+	go webScrapeJetkaiGithub(input.Https)
+
+	wg.Wait()
+
+	fmt.Printf("Removing duplicate https proxies\n")
+
+	uniqueProxies := helper.RemoveDuplicateProxies(proxies)
+
+	fmt.Printf("Duplicate https proxies removed\n")
+
+	return uniqueProxies
+}
+
+func initializeWebscrapeSocks5Proxies() []string {
+
+	wg.Add(2)
+
+	go webScrapeTheSpeedXGithub(input.Socks5)
+	go webScrapeJetkaiGithub(input.Socks5)
+
+	wg.Wait()
+
+	fmt.Printf("Removing duplicate socks5 proxies\n")
+
+	uniqueProxies := helper.RemoveDuplicateProxies(proxies)
+
+	fmt.Printf("Duplicate socks5 proxies removed\n")
+
+	return uniqueProxies
+}
+
+func initializeWebscrapeAllProxies() []string {
+
+	var allTypeOfProxies []string
+
+	httpProxies := initializeWebscrapeHttpProxies()
+	proxies = []string{}
+	httpsProxies := initializeWebscrapeHttpsProxies()
+	proxies = []string{}
+	socks5Proxies := initializeWebscrapeSocks5Proxies()
+
+	allTypeOfProxies = append(allTypeOfProxies, httpProxies...)
+	allTypeOfProxies = append(allTypeOfProxies, httpsProxies...)
+	allTypeOfProxies = append(allTypeOfProxies, socks5Proxies...)
+
+	return allTypeOfProxies
+}
+
+func webScrapeProxyListNet(proxyType int) {
+	defer wg.Done()
 
 	res, err := http.Get("https://free-proxy-list.net")
 
@@ -73,20 +147,31 @@ func webScrapeProxyListNet() {
 
 		ip := nodes[0].FirstChild.Data
 		port := nodes[1].FirstChild.Data
+		isHttps := nodes[6].FirstChild.Data
+
+		if proxyType == input.Https && isHttps == "no" {
+			return
+		}
 
 		proxy := fmt.Sprintf("%v:%v", ip, port)
 		proxies = append(proxies, proxy)
 	})
 
-	fmt.Printf("grabbed from %v\n", "ProxyListNet")
 }
 
-func webScrapeTheSpeedXGithub() {
+func webScrapeTheSpeedXGithub(proxyType int) {
 	defer wg.Done()
 
-	fmt.Printf("grabbing proxies from %v ...\n", "TheSpeedXGithub")
+	var siteUrl string
 
-	res, err := http.Get("https://raw.githubusercontent.com/TheSpeedX/SOCKS-List/master/http.txt")
+	switch proxyType {
+	case input.Http:
+		siteUrl = "https://raw.githubusercontent.com/TheSpeedX/SOCKS-List/master/http.txt"
+	case input.Socks5:
+		siteUrl = "https://raw.githubusercontent.com/TheSpeedX/PROXY-List/master/socks5.txt"
+	}
+
+	res, err := http.Get(siteUrl)
 
 	if err != nil {
 		log.Fatalf("Error in WebScrapeTheSpeedXGithub info: %v\n", err.Error())
@@ -114,14 +199,10 @@ func webScrapeTheSpeedXGithub() {
 
 	proxies = append(proxies, speedxProxies...)
 
-	fmt.Printf("grabbed from %v\n", "TheSpeedXGithub")
-
 }
 
 func webscrapeClarketmGithub() {
 	defer wg.Done()
-
-	fmt.Printf("grabbing proxies from %v ...\n", "ClarketmGithub")
 
 	res, err := http.Get("https://raw.githubusercontent.com/Clarketm/proxy-list/master/proxy-list-raw.txt")
 
@@ -151,15 +232,23 @@ func webscrapeClarketmGithub() {
 
 	proxies = append(proxies, clarketmProxies...)
 
-	fmt.Printf("grabbed from %v\n", "ClarketmGithub")
 }
 
-func webScrapeJetkaiHttpGithub() {
+func webScrapeJetkaiGithub(proxyType int) {
 	defer wg.Done()
 
-	fmt.Printf("grabbing proxies from %v ...\n", "JetkaiHttpGithub")
+	var siteUrl string
 
-	res, err := http.Get("https://raw.githubusercontent.com/jetkai/proxy-list/main/online-proxies/txt/proxies-http.txt")
+	switch proxyType {
+	case input.Http:
+		siteUrl = "https://raw.githubusercontent.com/jetkai/proxy-list/main/online-proxies/txt/proxies-http.txt"
+	case input.Https:
+		siteUrl = "https://raw.githubusercontent.com/jetkai/proxy-list/main/online-proxies/txt/proxies-https.txt"
+	case input.Socks5:
+		siteUrl = "https://raw.githubusercontent.com/jetkai/proxy-list/main/online-proxies/txt/proxies-socks5.txt"
+	}
+
+	res, err := http.Get(siteUrl)
 
 	if err != nil {
 		log.Fatalf("Error in WebScrapeJetkaiHttpGithub info: %v\n", err.Error())
@@ -186,6 +275,4 @@ func webScrapeJetkaiHttpGithub() {
 	clarketmProxies := strings.Split(cbts, "\n")
 
 	proxies = append(proxies, clarketmProxies...)
-
-	fmt.Printf("grabbed from %v\n", "JetkaiHttpGithub")
 }

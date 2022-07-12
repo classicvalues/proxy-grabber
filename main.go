@@ -14,6 +14,10 @@ func main() {
 	var fileName string
 	var chunkSize int
 
+	input.ChangeReverseProxyTimeout()
+
+	proxyType := input.EnterProxyType()
+
 	fileName = input.EnterFileName()
 	chunkSize = input.EnterChunkSize()
 
@@ -35,7 +39,7 @@ func main() {
 		panic(message)
 	}
 
-	proxies := webscrape.InitializeWebScrapeProxies()
+	proxies := webscrape.InitializeWebScrapeProxies(proxyType)
 	activeProxies := helper.FindActiveProxies(chunkSize, proxies)
 	err = helper.WriteProxiesToFile(activeProxies)
 

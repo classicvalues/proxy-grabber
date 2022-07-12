@@ -11,7 +11,11 @@ var wg sync.WaitGroup
 var activeProxies = make([]string, 0)
 var totalProxies int
 var client = http.Client{
-	Timeout: 2 * time.Second,
+	Timeout: 3 * time.Second,
+}
+
+func ChangeReverseProxyTimeOut(timeoutTime int) {
+	client.Timeout = time.Duration(timeoutTime * int(time.Second))
 }
 
 func FindActiveProxies(chunkSize int, proxies []string) []string {
