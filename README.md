@@ -7,7 +7,7 @@
 > - Grabbing Http Proxies
 > - Grabbing Https Proxies
 > - Grabbing Socks5 Proxies
-> - Grabbing different types of proxies at the same time or seperate
+> - Grabbing different types of proxies at the same time or separate
 > - Define Timeout time of Reverse proxy to checking active proxies
 > - Define Chunk Size to increase speed of checking active proxies
 
