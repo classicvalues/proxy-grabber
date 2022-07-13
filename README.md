@@ -20,6 +20,10 @@
 - Go to the Release Section of Github Repo
 - Download the latest release version which be compatible to your OS
 - Go to the path of proxy-grabber that you downloaded then run below command in your command-line
+- Give executable access to proxy-grabber (just for linux)
+```
+sudo chmod +x proxy-grabber-linux
+```
 
 - Linux Os
 
@@ -45,7 +49,22 @@ go build
 
 > depending on your OS (win/linux) it will create proxy-grabber.exe or proxy-grabber
 
-- Run the proxy-grabber (which you already built) by ./proxy-grabber.exe or ./proxy-grabber (in command-line)
+- Give executable access to proxy-grabber (just for linux)
+```
+sudo chmod +x proxy-grabber-linux
+```
+
+- Linux Os
+
+```
+./proxy-grabber
+```
+
+- Windows Os
+
+```
+./proxy-grabber.exe
+```
 
 ### Usage 3 (With Dependencies)
 
